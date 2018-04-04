@@ -16,7 +16,40 @@ import numpy as np
 from TSPClasses import *
 import heapq
 
+def reduce_row(matrix, row):
+    min_val = min(matrix[row])
+    for i in range(len(matrix)):
+        matrix[row][i] -= min_val
+    return min_val
 
+def reduce_col(matrix, col):
+    lst = []
+    for i in range(len(matrix)):
+        for j in range(len(matrix)):
+            if j == col:
+                lst.append(matrix[i][j])
+    min_val = min(lst)
+    for x in range(len(matrix)):
+        for y in range(len(matrix)):
+            if y == col:
+                matrix[x][y] -= min_val
+    return min_val
+
+def set_row(matrix, row, value):
+    for i in range(len(matrix)):
+        matrix[row][i] = value
+
+def set_col(matrix, col, value):
+    for i in range(len(matrix)):
+        matrix[i][col] = value
+
+def reduce_matrix(matrix):
+    lb = 0
+    for i in range(len(matrix)):
+        lb = lb + reduce_row(matrix, i)
+    for j in range(len(matrix)):
+        lb = lb + reduce_col(matrix, j)
+    return lb
 
 class TSPSolver:
     def __init__( self, gui_view ):
@@ -85,55 +118,27 @@ not counting initial BSSF estimate)</returns> '''
     def greedy( self, start_time, time_allowance=60.0 ):
         pass
 
-    def reduce_row(matrix, row):
-        min_val = min(matrix[row])
-        for i in range(len(matrix)):
-            matrix[row][i] -= min_val
-        return min_val
-
-    def reduce_col(matrix, col):
-        lst = []
-        for i in range(len(matrix)):
-            for j in range(len(matrix)):
-                if j == col:
-                    lst.append(matrix[i][j])
-        min_val = min(lst)
-        for x in range(len(matrix)):
-            for y in range(len(matrix)):
-                if y == col:
-                    matrix[x][y] -= min_val
-        return min_val
-
-    def set_row(matrix, row, value):
-        for i in range(len(matrix)):
-            matrix[row][i] = value
-
-    def set_col(matrix, col, value):
-        for i in range(len(matrix)):
-            matrix[i][col] = value
-
-    def reduce_matrix(matrix):
-        lb = 0
-        for i in range(len(matrix)):
-            lb = lb + reduce_row(matrix, i)
-        for j in range(len(matrix)):
-            lb = lb + reduce_col(matrix, j)
-        return lb
-
     def branchAndBound( self, start_time, time_allowance=60.0 ):
         cities = self._scenario.getCities()
         ncities = len(cities)
-        initial_matrix = np.arange(ncities**2).reshape(ncities, ncities)
-
-        initial_results = defaultRandomTour(self, start_time, 60)
-        bssf = results['cost']
+        initial_matrix = np.arange(float(ncities**2)).reshape(ncities, ncities)
 
         for i in range(ncities):
             for j in range(ncities):
-                if i == j:
-                    initial_matrix[i][j] = float.('inf')
-                    continue
                 initial_matrix[i][j] = cities[i].costTo(cities[j])
+
+        initial_results = self.defaultRandomTour(start_time, 60)
+        bssf = initial_results['cost']
+
+        lower_bound = reduce_matrix(initial_matrix)
+
+        pq = []
+
+        
+
+        #print(initial_matrix)
+        #reduce_matrix(initial_matrix)
+        #print(initial_matrix)
 
 
 
