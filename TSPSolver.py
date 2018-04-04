@@ -128,17 +128,30 @@ not counting initial BSSF estimate)</returns> '''
                 initial_matrix[i][j] = cities[i].costTo(cities[j])
 
         initial_results = self.defaultRandomTour(start_time, 60)
-        bssf = initial_results['cost']
+        bssf = {}
+        bssf['cost'] = initial_results['cost']
+        bssf['time'] = initial_results['time']
+        bssf['count'] = initial_results['count']
+        bssf['soln'] = initial_results['soln']
 
         lower_bound = reduce_matrix(initial_matrix)
 
         pq = []
 
-        
+        heapq.heappush(pq, (len(cities) - 1), lower_bound, [0] initial_matrix)
 
-        #print(initial_matrix)
-        #reduce_matrix(initial_matrix)
-        #print(initial_matrix)
+        while(len(pq) != 0 and time.time() - start_time < 60):
+            state  = heapq.heappop(pq)
+            curr_depth = ncities - state[0]
+            lb = state[1]
+            visited = state[2]
+            matrix = state[3]
+
+            if curr_node == ncities - 1:               #reached leaf node
+                if lb < bssf['cost']:                  #if better than BSSF
+                    bssf['cost'] = lb
+                    bssf['soln'] = visited
+                continue
 
 
 
