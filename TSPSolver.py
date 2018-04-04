@@ -138,9 +138,10 @@ not counting initial BSSF estimate)</returns> '''
 
         pq = []
 
-        heapq.heappush(pq, (len(cities) - 1), lower_bound, [0] initial_matrix)
+        heapq.heappush(pq, (len(cities) - 1), lower_bound, [0], initial_matrix)
 
         while(len(pq) != 0 and time.time() - start_time < 60):
+
             state  = heapq.heappop(pq)
             curr_depth = ncities - state[0]
             lb = state[1]
@@ -152,6 +153,21 @@ not counting initial BSSF estimate)</returns> '''
                     bssf['cost'] = lb
                     bssf['soln'] = visited
                 continue
+
+            for i in range(1, ncities):
+                temp_lb = lb
+
+                if matrix[visted[len(visited) - 1]][i] != float('inf'): #Look for valid cities to visited
+                    temp_lb += cpy_matrix[visited[len(visited) - 1]][i]
+                    cpy_matrix = np.array(matrix)
+                    set_row(cpy_matrix, visited[len(visited) - 1], float('inf'))
+                    set_col(cpy_matrix, i, float('inf'))
+                    cpy_matrix[i][visited[len(visited) -1]] = float('inf')
+                    temp_lb += reduce_matrix(cpy_matrix)
+                    if temp_lb < bssf['cost']:
+                        new_visited = list(visited)
+                        heapq.heappush(pq, len(cities)-1), temp_lb, new_visited.append(i), cpy_matrix)
+
 
 
 
