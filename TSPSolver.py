@@ -19,7 +19,7 @@ import heapq
 #Time Complexity: O(n)
 def reduce_row(matrix, row):
     min_val = min(matrix[row])
-    if min_val == float('inf'):
+    if min_val == float('inf'):                                 #float('inf') - float('inf') = NaN
         return 0;
     for i in range(len(matrix)):
         matrix[row][i] -= min_val
@@ -29,19 +29,19 @@ def reduce_row(matrix, row):
 #Space Complexity: O(n)
 def reduce_col(matrix, col):
     lst = []
+    #Time Complexity: O(n)
     for i in range(len(matrix)):
         lst.append(matrix[i][col])
-        #for j in range(len(matrix)):
-        #    if j == col:
-        #        lst.append(matrix[i][j])
+
     min_val = min(lst)
-    if min_val == float('inf'):
+
+    if min_val == float('inf'):                                 #float('inf') - float('inf') = NaN
         return 0;
+
+    #Time Complexity: O(n)
     for x in range(len(matrix)):
         matrix[x][col] -= min_val
-        #for y in range(len(matrix)):
-        #    if y == col:
-        #        matrix[x][y] -= min_val
+
     return min_val
 
 #Time Complexity: O(n)
@@ -134,8 +134,11 @@ not counting initial BSSF estimate)</returns> '''
         start_time = time.time()
         cities = self._scenario.getCities()
         ncities = len(cities)
+
+        #Space Complexity: O(n^2)
         initial_matrix = np.arange(float(ncities**2)).reshape(ncities, ncities)
 
+        #Time Complexity: O(n^2)
         for i in range(ncities):
             for j in range(ncities):
                 initial_matrix[i][j] = cities[i].costTo(cities[j])
@@ -151,23 +154,28 @@ not counting initial BSSF estimate)</returns> '''
 
         pq = []
 
+        #Space Complexity: O(1)
         heapq.heappush(pq, (len(cities) - 1, lower_bound, [0], initial_matrix))
         states_pruned = 0
         states_created = 1
         max_heap_size = len(pq)
+
+        #Time Complexity:
+        #Space Complexity:
         while(len(pq) != 0 and time.time() - start_time < 60):
+            #Time Complexity: O(1)
             state  = heapq.heappop(pq)
             curr_depth = len(cities) - state[0]
             lb = state[1]
             visited = state[2]
             matrix = state[3]
 
-            if curr_depth == len(cities):
-                                                #reached leaf node
-                if lb < bssf['cost']:                   #if better than BSSF
+            if curr_depth == len(cities):                                #reached leaf node
+                if lb < bssf['cost']:                                   #if better than BSSF
                     bssf['cost'] = lb
                     bssf['soln'] = []
 
+                    #Time Complexity: O(n)
                     for i in visited:
                         bssf['soln'].append(cities[i])
                     bssf['soln'] = TSPSolution(bssf['soln'])
@@ -180,25 +188,28 @@ not counting initial BSSF estimate)</returns> '''
             for i in range(1, ncities):
                 temp_lb = lb
                 if matrix[visited[len(visited) - 1]][i] != float('inf'): #Look for valid cities to visit
-                    #Space Complexity: O(n)
                     states_created += 1
+                    #Space Complexity: O(n)
                     cpy_matrix = np.array(matrix)
                     temp_lb += cpy_matrix[visited[len(visited) - 1]][i]
                     set_row(cpy_matrix, visited[len(visited) - 1], float('inf'))
                     set_col(cpy_matrix, i, float('inf'))
                     cpy_matrix[i][visited[len(visited) -1]] = float('inf')
                     temp_lb += reduce_matrix(cpy_matrix)
-                    if temp_lb < bssf['cost']:
+                    if temp_lb < bssf['cost']:                          #State was not pruned
                         new_visited = list(visited)
                         new_visited.append(i)
+
+                        #Space Complexity: O(1)
                         heapq.heappush(pq, (len(cities)- curr_depth - 1, temp_lb, new_visited, cpy_matrix))
-                        if max_heap_size < len(pq):
+                        if max_heap_size < len(pq):                      #check heap size
                             max_heap_size = len(pq)
-                    else:
+                    else:                                                #State was pruned
                         states_pruned += 1
 
             bssf['time'] = time.time() - start_time
-            #results['count'] =
+
+        print("=======================================")
         print('states created: ' + str(states_created))
         print('states pruned: ' + str(states_pruned))
         print('max heap size: ' + str(max_heap_size))
