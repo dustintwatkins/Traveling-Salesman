@@ -16,33 +16,45 @@ import numpy as np
 from TSPClasses import *
 import heapq
 
+#Time Complexity: O(n)
 def reduce_row(matrix, row):
     min_val = min(matrix[row])
+    if min_val == float('inf'):
+        return 0;
     for i in range(len(matrix)):
         matrix[row][i] -= min_val
     return min_val
 
+#Time Complexity: O(n^2)
+#Space Complexity: O(n)
 def reduce_col(matrix, col):
     lst = []
     for i in range(len(matrix)):
-        for j in range(len(matrix)):
-            if j == col:
-                lst.append(matrix[i][j])
+        lst.append(matrix[i][col])
+        #for j in range(len(matrix)):
+        #    if j == col:
+        #        lst.append(matrix[i][j])
     min_val = min(lst)
+    if min_val == float('inf'):
+        return 0;
     for x in range(len(matrix)):
-        for y in range(len(matrix)):
-            if y == col:
-                matrix[x][y] -= min_val
+        matrix[x][col] -= min_val
+        #for y in range(len(matrix)):
+        #    if y == col:
+        #        matrix[x][y] -= min_val
     return min_val
 
+#Time Complexity: O(n)
 def set_row(matrix, row, value):
     for i in range(len(matrix)):
         matrix[row][i] = value
 
+#Time Complexity: O(n)
 def set_col(matrix, col, value):
     for i in range(len(matrix)):
         matrix[i][col] = value
 
+#Time Complexity: O(n)
 def reduce_matrix(matrix):
     lb = 0
     for i in range(len(matrix)):
@@ -119,6 +131,7 @@ not counting initial BSSF estimate)</returns> '''
         pass
 
     def branchAndBound( self, start_time, time_allowance=60.0 ):
+        start_time = time.time()
         cities = self._scenario.getCities()
         ncities = len(cities)
         initial_matrix = np.arange(float(ncities**2)).reshape(ncities, ncities)
@@ -131,48 +144,65 @@ not counting initial BSSF estimate)</returns> '''
         bssf = {}
         bssf['cost'] = initial_results['cost']
         bssf['time'] = initial_results['time']
-        bssf['count'] = initial_results['count']
+        bssf['count'] = 1
         bssf['soln'] = initial_results['soln']
 
         lower_bound = reduce_matrix(initial_matrix)
 
         pq = []
 
-        heapq.heappush(pq, (len(cities) - 1), lower_bound, [0], initial_matrix)
-
+        heapq.heappush(pq, (len(cities) - 1, lower_bound, [0], initial_matrix))
+        states_pruned = 0
+        states_created = 1
+        max_heap_size = len(pq)
         while(len(pq) != 0 and time.time() - start_time < 60):
-
             state  = heapq.heappop(pq)
-            curr_depth = ncities - state[0]
+            curr_depth = len(cities) - state[0]
             lb = state[1]
             visited = state[2]
             matrix = state[3]
 
-            if curr_node == ncities - 1:               #reached leaf node
-                if lb < bssf['cost']:                  #if better than BSSF
+            if curr_depth == len(cities):
+                                                #reached leaf node
+                if lb < bssf['cost']:                   #if better than BSSF
                     bssf['cost'] = lb
-                    bssf['soln'] = visited
+                    bssf['soln'] = []
+
+                    for i in visited:
+                        bssf['soln'].append(cities[i])
+                    bssf['soln'] = TSPSolution(bssf['soln'])
+                    bssf['cost'] = bssf['soln'].costOfRoute()
+                    bssf['count'] += 1
                 continue
 
+            #Time Complexity: O(n)
+            #Space Complexity: O(n^2)
             for i in range(1, ncities):
                 temp_lb = lb
-
-                if matrix[visted[len(visited) - 1]][i] != float('inf'): #Look for valid cities to visited
-                    temp_lb += cpy_matrix[visited[len(visited) - 1]][i]
+                if matrix[visited[len(visited) - 1]][i] != float('inf'): #Look for valid cities to visit
+                    #Space Complexity: O(n)
+                    states_created += 1
                     cpy_matrix = np.array(matrix)
+                    temp_lb += cpy_matrix[visited[len(visited) - 1]][i]
                     set_row(cpy_matrix, visited[len(visited) - 1], float('inf'))
                     set_col(cpy_matrix, i, float('inf'))
                     cpy_matrix[i][visited[len(visited) -1]] = float('inf')
                     temp_lb += reduce_matrix(cpy_matrix)
                     if temp_lb < bssf['cost']:
                         new_visited = list(visited)
-                        heapq.heappush(pq, len(cities)-1), temp_lb, new_visited.append(i), cpy_matrix)
+                        new_visited.append(i)
+                        heapq.heappush(pq, (len(cities)- curr_depth - 1, temp_lb, new_visited, cpy_matrix))
+                        if max_heap_size < len(pq):
+                            max_heap_size = len(pq)
+                    else:
+                        states_pruned += 1
 
-
-
-
-
-
+            bssf['time'] = time.time() - start_time
+            #results['count'] =
+        print('states created: ' + str(states_created))
+        print('states pruned: ' + str(states_pruned))
+        print('max heap size: ' + str(max_heap_size))
+        return bssf
 
 
     def fancy( self, start_time, time_allowance=60.0 ):
