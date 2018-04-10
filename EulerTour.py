@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import import copy
+import  copy
 
 
 def set_visited(edge, edges):
@@ -8,7 +8,7 @@ def set_visited(edge, edges):
             edges[i] = (edge[0], edge[1], True)
     return edges
 
-def EulerTour(matrix):
+def EulerTour(matrix: np.ndarray):
     edges = []
     for i in range(len(matrix)):
         for j in range(len(matrix)):
@@ -40,4 +40,4 @@ def EulerTour(matrix):
     for t in tours:
         print('new tour')
         print(t)
-    #return tours
+    return tours
